@@ -23,7 +23,7 @@ MINUTES = 60  # seconds
 
 # The composition bundled into the preview page + default render target.
 # Swap this to change what the template previews/renders.
-PREVIEW_COMPOSITION = "modal-intro"
+PREVIEW_COMPOSITION = "one-tap"
 
 root = pathlib.Path(__file__).resolve().parent.parent
 
