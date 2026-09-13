@@ -109,26 +109,29 @@ def render_composition(
         shutil.copytree(src, work / "composition")
 
     out = work / "out.mp4"
-proc = subprocess.run(
-    [
-        "hyperframes",
-        "render",
-        "composition",
-        "-o",
-        str(out),
-        "--workers",
-        "auto",
-        "--no-browser-gpu",
-    ],
-    cwd=work,
-    capture_output=True,
-    text=True,
-)
-if proc.returncode != 0:
-    raise RuntimeError(
-        f"hyperframes render failed (exit {proc.returncode}).\n"
-        f"STDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
+    proc = subprocess.run(
+        [
+            "hyperframes",
+            "render",
+            "composition",
+            "-o",
+            str(out),
+            "--workers",
+            "auto",
+            # No GPU in Modal containers: skip the GPU probe, which otherwise
+            # hangs to puppeteer's 180s protocolTimeout before falling back.
+            "--no-browser-gpu",
+        ],
+        cwd=work,
+        capture_output=True,
+        text=True,
     )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"hyperframes render failed (exit {proc.returncode}).\n"
+            f"--- STDOUT ---\n{proc.stdout}\n"
+            f"--- STDERR ---\n{proc.stderr}"
+        )
 
     name = f"render-{uuid.uuid4().hex[:8]}.mp4"
     shutil.copy(out, f"{RENDERS_DIR}/{name}")
