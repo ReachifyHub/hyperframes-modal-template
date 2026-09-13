@@ -80,8 +80,13 @@ RENDERS_DIR = "/renders"
     timeout=15 * MINUTES,
     volumes={RENDERS_DIR: renders},
 )
-def render_composition(composition: str = PREVIEW_COMPOSITION) -> str:
-    """Render one bundled composition to MP4 and store it on the Volume.
+def render_composition(
+    composition: str = PREVIEW_COMPOSITION, html: str | None = None
+) -> str:
+    """Render one composition to MP4 and store it on the Volume.
+
+    If `html` is provided, it is written as the composition's index.html and
+    rendered instead of the bundled composition folder.
 
     Returns the filename on the Volume (serve via GET /renders/{name}).
     """
@@ -89,14 +94,19 @@ def render_composition(composition: str = PREVIEW_COMPOSITION) -> str:
     import subprocess
     import uuid
 
-    src = pathlib.Path("/compositions") / composition
-    if not src.is_dir():
-        raise ValueError(f"unknown composition: {composition!r}")
-
     work = pathlib.Path("/tmp/render-job")
     if work.exists():
         shutil.rmtree(work)
-    shutil.copytree(src, work / "composition")
+    work.mkdir(parents=True)
+
+    if html is not None:
+        (work / "composition").mkdir()
+        (work / "composition" / "index.html").write_text(html)
+    else:
+        src = pathlib.Path("/compositions") / composition
+        if not src.is_dir():
+            raise ValueError(f"unknown composition: {composition!r}")
+        shutil.copytree(src, work / "composition")
 
     out = work / "out.mp4"
     subprocess.run(
@@ -116,7 +126,7 @@ def render_composition(composition: str = PREVIEW_COMPOSITION) -> str:
         check=True,
     )
 
-    name = f"{composition}-{uuid.uuid4().hex[:8]}.mp4"
+    name = f"render-{uuid.uuid4().hex[:8]}.mp4"
     shutil.copy(out, f"{RENDERS_DIR}/{name}")
     renders.commit()
     return name
@@ -126,14 +136,26 @@ def render_composition(composition: str = PREVIEW_COMPOSITION) -> str:
 @modal.asgi_app()
 def web():
     import fastapi
+    from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
     from fastapi.staticfiles import StaticFiles
+    from pydantic import BaseModel
 
     api = fastapi.FastAPI(title="HyperFrames on Modal")
 
+    api.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    class RenderRequest(BaseModel):
+        html: str
+
     @api.post("/api/render")
-    def start_render() -> dict:
-        call = render_composition.spawn(PREVIEW_COMPOSITION)
+    def start_render(req: RenderRequest) -> dict:
+        call = render_composition.spawn(html=req.html)
         return {"call_id": call.object_id}
 
     @api.get("/api/render/{call_id}")
