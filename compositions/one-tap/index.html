@@ -1,533 +1,200 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=1920, height=1080">
-<title>One Tap — Design Problem</title>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1280, height=720" />
+<title>The Avoidance Protocol</title>
+<script src="[https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js](https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js)"></script>
 <style>
-  :root {
-    --bg: #0A0A0A;
-    --ink: #F0F0F0;
-    --muted: #7A7A7A;
-    --dim: #2A2A2A;
-    --accent: #FFB347;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 1920px; height: 1080px; overflow: hidden;
-    background: var(--bg);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: var(--ink);
-    -webkit-font-smoothing: antialiased;
-  }
-  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
-  .clip { position: absolute; inset: 0; }
-
-  /* Track 0 — vignette */
-  #vignette {
-    position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.6) 100%);
-  }
-
-  /* Track 1 — counter */
-  #counter-center { position: absolute; inset: 0; display: grid; place-items: center; }
-  #counter-main {
-    position: relative;
-    width: 900px; height: 560px;
-    font-size: 480px; font-weight: 800;
-    line-height: 1; letter-spacing: -0.05em;
-    will-change: transform, opacity;
-  }
-  #counter-main .cn {
-    position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    white-space: nowrap; visibility: hidden;
-  }
-  #counter-label {
-    position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, 340px);
-    font-size: 26px; font-weight: 500;
-    letter-spacing: 0.5em;
-    color: var(--muted); text-transform: uppercase;
-    visibility: hidden;
-  }
-
-  /* Track 2 — clock */
-  #clock-scene {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center; gap: 140px;
-    visibility: hidden;
-  }
-  #clock { width: 320px; height: 320px; }
-  #clock-label {
-    font-size: 32px; font-weight: 400;
-    letter-spacing: 0.4em;
-    color: var(--muted); text-transform: uppercase;
-    visibility: hidden;
-  }
-
-  /* Track 3 — icons */
-  #icons-scene {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 80px;
-    visibility: hidden;
-  }
-  .icon-block { width: 720px; height: 220px; visibility: hidden; }
-
-  /* Track 4 — path */
-  #path-scene { position: absolute; inset: 0; visibility: hidden; }
-  #path-svg { position: absolute; inset: 0; width: 1920px; height: 1080px; }
-  #path-text {
-    position: absolute; left: 0; right: 0; bottom: 200px;
-    text-align: center;
-    font-size: 84px; font-weight: 300;
-    letter-spacing: -0.01em; color: var(--ink);
-    visibility: hidden;
-  }
-
-  /* Track 5 — tap + flash + cracks */
-  #tap-ripple {
-    position: absolute; left: 960px; top: 540px;
-    width: 220px; height: 220px;
-    margin-left: -110px; margin-top: -110px;
-    border: 3px solid var(--ink);
-    border-radius: 50%;
-    visibility: hidden;
-    will-change: transform, opacity;
-  }
-  #cracks { position: absolute; inset: 0; width: 1920px; height: 1080px; visibility: hidden; }
-  #flash {
-    position: absolute; inset: 0;
-    background: #FFFFFF; opacity: 0; visibility: hidden; pointer-events: none;
-  }
-
-  /* Track 6 — stillness */
-  #stillness-text {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    padding: 0 320px; text-align: center;
-    font-size: 84px; font-weight: 300;
-    line-height: 1.2; letter-spacing: -0.01em;
-    visibility: hidden;
-  }
-
-  /* Track 7 — weak */
-  #weak-text {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    text-align: center;
-    font-size: 84px; font-weight: 500;
-    line-height: 1.2; color: var(--muted);
-    visibility: hidden;
-  }
-  #weak-line {
-    position: absolute; left: 50%; top: 50%;
-    width: 720px; height: 2px;
-    margin-left: -360px; margin-top: 110px;
-    background: var(--dim);
-    transform-origin: left center;
-    transform: scaleX(0);
-    visibility: hidden;
-  }
-
-  /* Track 8 — diagram */
-  #diagram {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center; gap: 40px;
-    padding-bottom: 140px;
-    visibility: hidden;
-  }
-  #diagram-dot {
-    width: 48px; height: 48px;
-    background: var(--ink); border-radius: 50%;
-    visibility: hidden;
-    will-change: transform, opacity;
-  }
-  #diagram-door { width: 200px; height: 240px; visibility: hidden; }
-  #diagram-caption {
-    position: absolute; left: 0; right: 0; bottom: 140px;
-    text-align: center; padding: 0 240px;
-    font-size: 40px; font-weight: 300;
-    line-height: 1.4; color: var(--ink);
-    visibility: hidden;
-  }
-
-  /* Track 9 — willpower */
-  #willpower-text {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    text-align: center;
-    font-size: 96px; font-weight: 500;
-    line-height: 1.2; color: var(--muted);
-    visibility: hidden;
-  }
-  #willpower-word { position: relative; display: inline-block; color: var(--ink); }
-  #willpower-strike {
-    position: absolute; left: -1%; top: 52%;
-    width: 102%; height: 4px;
-    background: var(--ink);
-    transform: scaleX(0) rotate(-5deg);
-    transform-origin: left center;
-    will-change: transform;
-  }
-
-  /* Track 10 — final */
-  #final-wrap {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 44px;
-  }
-  #final-line1 {
-    font-size: 128px; font-weight: 700;
-    line-height: 1.1; letter-spacing: -0.02em;
-    color: var(--accent);
-    visibility: hidden;
-  }
-  #final-line2 {
-    font-size: 64px; font-weight: 500;
-    letter-spacing: -0.01em;
-    color: var(--accent); opacity: 0.85;
-    visibility: hidden;
-  }
-  #fade-black {
-    position: absolute; inset: 0;
-    background: #000; opacity: 0; visibility: hidden; pointer-events: none;
-  }
+:root {
+--bg: #0A0A0A;
+--ink: #D4D4D4;
+--accent: #FFB347; /* warm amber */
+}
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+html, body {
+width: 1280px;
+height: 720px;
+overflow: hidden;
+background: var(--bg);
+font-family: system-ui, sans-serif;
+color: var(--ink);
+}
+#root {
+position: relative;
+width: 1280px;
+height: 720px;
+overflow: hidden;
+background: var(--bg);
+}
+/* ---------- Shared Classes ---------- */
+.clip {
+position: absolute;
+inset: 0;
+}
+.scene {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 80px;
+text-align: center;
+}
+/* ---------- Typography ---------- */
+.text-large {
+font-size: 56px;
+font-weight: 300;
+letter-spacing: 0.04em;
+line-height: 1.4;
+margin-bottom: 20px;
+will-change: transform, opacity;
+}
+.text-medium {
+font-size: 42px;
+font-weight: 300;
+letter-spacing: 0.03em;
+line-height: 1.5;
+will-change: transform, opacity;
+}
+.accent {
+color: var(--ink);
+transition: color 0.5s ease;
+}
+/* ---------- Visuals ---------- */
+.visual-container {
+position: relative;
+width: 600px;
+height: 100px;
+margin: 40px auto;
+}
+.fixed-line {
+position: absolute;
+left: 100px;
+top: 10px;
+bottom: 10px;
+width: 2px;
+background: rgba(212, 212, 212, 0.4);
+}
+.drifting-dot {
+position: absolute;
+left: 100px;
+top: 50%;
+transform: translateY(-50%);
+width: 12px;
+height: 12px;
+border-radius: 50%;
+background: var(--ink);
+will-change: transform, opacity;
+}
 </style>
 </head>
 <body>
-<div id="stage"
-     data-root="true"
-     data-composition-id="one-tap"
-     data-start="0"
-     data-duration="26"
-     data-fps="30"
-     data-width="1920"
-     data-height="1080">
-
-  <!-- Track 0 — background -->
-  <div class="clip" data-start="0" data-duration="26" data-track-index="0">
-    <div id="vignette"></div>
-  </div>
-
-  <!-- Track 1 — persistent counter -->
-  <div class="clip" data-start="0" data-duration="8" data-track-index="1"
-       data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
-    <div id="counter-center">
-      <div id="counter-main"><!-- spans injected --></div>
-      <div id="counter-label">Day 47</div>
-    </div>
-  </div>
-
-  <!-- Track 2 — clock -->
-  <div class="clip" data-start="1" data-duration="2.2" data-track-index="2"
-       data-layout-allow-overlap="true">
-    <div id="clock-scene">
-      <svg id="clock" viewBox="0 0 200 200" fill="none">
-        <circle cx="100" cy="100" r="88" stroke="#2A2A2A" stroke-width="2"/>
-        <g id="clock-ticks"></g>
-        <line id="clock-hour" x1="100" y1="100" x2="100" y2="46"
-              stroke="#F0F0F0" stroke-width="6" stroke-linecap="round"/>
-        <line id="clock-min" x1="100" y1="100" x2="100" y2="22"
-              stroke="#F0F0F0" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="100" cy="100" r="5" fill="#F0F0F0"/>
-      </svg>
-      <div id="clock-label">2:00 AM</div>
-    </div>
-  </div>
-
-  <!-- Track 3 — fatigue / boredom icons -->
-  <div class="clip" data-start="3" data-duration="1.2" data-track-index="3"
-       data-layout-allow-overlap="true">
-    <div id="icons-scene">
-      <svg class="icon-block" id="icon-fatigue" viewBox="0 0 720 220" fill="none">
-        <path id="fatigue-path"
-              d="M 30 110 Q 150 110 250 110 T 450 110 T 690 110"
-              stroke="#F0F0F0" stroke-width="3" stroke-linecap="round"
-              stroke-dasharray="1600" stroke-dashoffset="1600"/>
-      </svg>
-      <svg class="icon-block" id="icon-boredom" viewBox="0 0 720 220" fill="none">
-        <line id="boredom-line" x1="30" y1="110" x2="690" y2="110"
-              stroke="#F0F0F0" stroke-width="3" stroke-linecap="round"
-              stroke-dasharray="800" stroke-dashoffset="800"/>
-      </svg>
-    </div>
-  </div>
-
-  <!-- Track 4 — dotted path -->
-  <div class="clip" data-start="4" data-duration="2" data-track-index="4"
-       data-layout-allow-overlap="true">
-    <div id="path-scene">
-      <svg id="path-svg" viewBox="0 0 1920 1080" fill="none">
-        <line id="path-line" x1="400" y1="480" x2="1820" y2="480"
-              stroke="#F0F0F0" stroke-width="3"
-              stroke-dasharray="6 22" stroke-dashoffset="1400"/>
-        <path id="path-arrow" d="M 1770 450 L 1830 480 L 1770 510"
-              stroke="#F0F0F0" stroke-width="3" fill="none"
-              stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
-      </svg>
-      <div id="path-text">You know exactly what happens next.</div>
-    </div>
-  </div>
-
-  <!-- Track 5 — tap + flash + cracks -->
-  <div class="clip" data-start="6" data-duration="2" data-track-index="5"
-       data-layout-allow-overlap="true" data-layout-allow-occlusion="true">
-    <div id="tap-ripple"></div>
-    <svg id="cracks" viewBox="0 0 1920 1080">
-      <g stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.9">
-        <polyline id="crack-1" points="1600,80 1640,140 1620,200 1660,260"
-                  stroke-dasharray="300" stroke-dashoffset="300"/>
-        <polyline id="crack-2" points="1700,60 1680,120 1720,180"
-                  stroke-dasharray="300" stroke-dashoffset="300"/>
-        <polyline id="crack-3" points="1640,120 1760,110"
-                  stroke-dasharray="200" stroke-dashoffset="200"/>
-      </g>
-    </svg>
-    <div id="flash"></div>
-  </div>
-
-  <!-- Track 6 — stillness -->
-  <div class="clip" data-start="9" data-duration="2" data-track-index="6">
-    <div id="stillness-text">And here's the part nobody says out loud.</div>
-  </div>
-
-  <!-- Track 7 — weak -->
-  <div class="clip" data-start="11" data-duration="3" data-track-index="7">
-    <div id="weak-text">You didn't fail because you're weak.</div>
-    <div id="weak-line"></div>
-  </div>
-
-  <!-- Track 8 — diagram -->
-  <div class="clip" data-start="14" data-duration="5" data-track-index="8">
-    <div id="diagram">
-      <div id="diagram-dot"></div>
-      <svg id="diagram-door" viewBox="0 0 200 240" fill="none">
-        <rect x="20" y="20" width="160" height="200" stroke="#3A3A3A" stroke-width="3"/>
-        <rect id="door-gap" x="90" y="20" width="20" height="200"
-              fill="#F0F0F0" opacity="0.1"/>
-      </svg>
-    </div>
-    <div id="diagram-caption">
-      You failed because the exit was one tap away, at the exact moment you had zero defenses up.
-    </div>
-  </div>
-
-  <!-- Track 9 — willpower crossout -->
-  <div class="clip" data-start="19" data-duration="2" data-track-index="9">
-    <div id="willpower-text">
-      That's not a
-      <span id="willpower-word">willpower<span id="willpower-strike"></span></span>
-      problem.
-    </div>
-  </div>
-
-  <!-- Track 10 — final -->
-  <div class="clip" data-start="21" data-duration="5" data-track-index="10">
-    <div id="final-wrap">
-      <div id="final-line1">That's a design problem.</div>
-      <div id="final-line2">Yours and the phone's.</div>
-    </div>
-    <div id="fade-black"></div>
-  </div>
-
+<!-- HTML structure and styling based on HyperFrames contract -->
+<div
+id="root"
+data-composition-id="avoidance"
+data-start="0"
+data-duration="17.5"
+data-width="1280"
+data-height="720"
+>
+<!-- Scene 1: Validation -->
+<section id="s1" class="clip scene" data-start="0" data-duration="3.36" data-track-index="1">
+<div id="s1-t1" class="text-large">You're not lazy.</div>
+<div id="s1-t2" class="text-large">You're not broken.</div>
+<div id="s1-t3" class="text-medium" style="margin-top: 20px;">Your brain is doing exactly what it evolved to do.</div>
+</section>
+<!-- Scene 2: The Drift -->
+<section id="s2" class="clip scene" data-start="3.36" data-duration="6.96" data-track-index="2">
+<div class="visual-container" id="s2-visual">
+<div class="fixed-line"></div>
+<div class="drifting-dot" id="s2-dot"></div>
 </div>
-
+<div id="s2-t1" class="text-medium">Avoid the thing that feels bad right now.</div>
+</section>
+<!-- Scene 3: The Realization -->
+<section id="s3" class="clip scene" data-start="10.32" data-duration="3.36" data-track-index="3">
+<div id="s3-t1" class="text-medium">Procrastination isn't a time management problem.</div>
+<div id="s3-t2" class="text-large" style="margin-top: 30px;">
+It's an <span id="s3-accent" class="accent">emotion management problem.</span>
+</div>
+</section>
+<!-- Scene 4: The Distance -->
+<section id="s4" class="clip scene" data-start="13.68" data-duration="3.82" data-track-index="4">
+<div class="visual-container" id="s4-visual">
+<div class="fixed-line"></div>
+<div class="drifting-dot" id="s4-dot"></div>
+</div>
+<div id="s4-t1" class="text-medium">The task isn't hard, the feeling is.</div>
+<div id="s4-t2" class="text-medium" style="margin-top: 20px;">And until you name that feeling,
+you'll keep running from it.</div>
+</section>
+<!-- Audio Tracks -->
+<!-- Voiceover source and timings -->
+<audio id="voiceover" data-start="0" data-duration="17.5" data-track-index="10" data-volume="1" src="fish-audio-20260915-203403_vtt.wav"></audio>
+<!-- Sound Effects -->
+<audio id="sfx-drone" data-start="0" data-duration="17.5" data-track-index="11" data-volume="0.3" src="sfx-dark-ambient-drone.wav"></audio>
+<audio id="sfx-drift" data-start="3.36" data-duration="7.0" data-track-index="12" data-volume="0.15" src="sfx-low-whoosh-drift.wav"></audio>
+<audio id="sfx-chime" data-start="11.2" data-duration="4.0" data-track-index="13" data-volume="0.5" src="sfx-warm-amber-chime.wav"></audio>
+<audio id="sfx-fade" data-start="16.0" data-duration="2.5" data-track-index="14" data-volume="0.4" src="sfx-deep-bass-drop.wav"></audio>
+</div>
 <script>
 (function () {
-  "use strict";
-
-  /* ============ deterministic DOM build ============ */
-
-  // --- counter spans (fast count-up 0→47) ---
-  var counterValues = [0, 4, 8, 12, 16, 20, 24, 28, 32, 35, 38, 41, 43, 45, 46, 47];
-  var cm = document.getElementById("counter-main");
-  counterValues.forEach(function (v, i) {
-    var s = document.createElement("span");
-    s.id = "cn-" + i;
-    s.className = "cn";
-    s.textContent = String(v);
-    cm.appendChild(s);
-  });
-  // separate "0" span for the crack-snap moment
-  var zero = document.createElement("span");
-  zero.id = "cn-zero";
-  zero.className = "cn";
-  zero.textContent = "0";
-  cm.appendChild(zero);
-
-  // --- clock tick marks ---
-  var ticks = document.getElementById("clock-ticks");
-  for (var t = 0; t < 12; t++) {
-    var a = (t / 12) * Math.PI * 2 - Math.PI / 2;
-    var ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    ln.setAttribute("x1", 100 + Math.cos(a) * 78);
-    ln.setAttribute("y1", 100 + Math.sin(a) * 78);
-    ln.setAttribute("x2", 100 + Math.cos(a) * 84);
-    ln.setAttribute("y2", 100 + Math.sin(a) * 84);
-    ln.setAttribute("stroke", "#3A3A3A");
-    ln.setAttribute("stroke-width", "2");
-    ticks.appendChild(ln);
-  }
-
-  /* ============ ONE paused timeline (absolute times, 26s) ============ */
-
-  window.__timelines = window.__timelines || {};
-  var tl = gsap.timeline({ paused: true });
-
-  /* ---- initial hide states (t=0) ---- */
-  tl.set(".cn",               { autoAlpha: 0 }, 0);
-  tl.set("#counter-label",    { autoAlpha: 0 }, 0);
-  tl.set("#clock-scene",      { autoAlpha: 0 }, 0);
-  tl.set("#clock-label",      { autoAlpha: 0 }, 0);
-  tl.set("#icons-scene",      { autoAlpha: 0 }, 0);
-  tl.set(".icon-block",       { autoAlpha: 0 }, 0);
-  tl.set("#path-scene",       { autoAlpha: 0 }, 0);
-  tl.set("#path-text",        { autoAlpha: 0 }, 0);
-  tl.set("#tap-ripple",       { autoAlpha: 0, scale: 0.2 }, 0);
-  tl.set("#cracks",           { autoAlpha: 0 }, 0);
-  tl.set("#flash",            { autoAlpha: 0 }, 0);
-  tl.set("#stillness-text",   { autoAlpha: 0, y: 24 }, 0);
-  tl.set("#weak-text",        { autoAlpha: 0, y: 24 }, 0);
-  tl.set("#weak-line",        { autoAlpha: 0 }, 0);
-  tl.set("#diagram",          { autoAlpha: 0 }, 0);
-  tl.set("#diagram-dot",      { autoAlpha: 0, scale: 0.6 }, 0);
-  tl.set("#diagram-door",     { autoAlpha: 0, y: 20 }, 0);
-  tl.set("#diagram-caption",  { autoAlpha: 0, y: 20 }, 0);
-  tl.set("#willpower-text",   { autoAlpha: 0 }, 0);
-  tl.set("#final-line1",      { autoAlpha: 0, y: 30 }, 0);
-  tl.set("#final-line2",      { autoAlpha: 0, y: 30 }, 0);
-  tl.set("#fade-black",       { autoAlpha: 0 }, 0);
-
-  // clock hands — initial angles (before sweep)
-  tl.set("#clock-hour", { rotation: 330, svgOrigin: "100 100" }, 0);
-  tl.set("#clock-min",  { rotation: 300, svgOrigin: "100 100" }, 0);
-
-  /* ---- 0.00–1.00: big 47 count-up ---- */
-  var countDur = 0.62;
-  var stepDur = countDur / counterValues.length;
-  for (var i = 0; i < counterValues.length; i++) {
-    tl.set("#cn-" + i, { autoAlpha: 1 }, i * stepDur);
-    if (i > 0) tl.set("#cn-" + (i - 1), { autoAlpha: 0 }, i * stepDur);
-  }
-  // scale punch on landing
-  tl.fromTo("#counter-main",
-    { scale: 1.05 }, { scale: 1.0, duration: 0.18, ease: "power2.out" }, 0.62);
-  // "DAY 47" label
-  tl.to("#counter-label", { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, 0.75);
-
-  /* ---- 1.00–1.42: counter shrinks to top-right corner ---- */
-  tl.to("#counter-label", { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 1.0);
-  tl.to("#counter-main",
-    { x: 720, y: -420, scale: 0.16, duration: 0.42, ease: "power3.inOut" }, 1.0);
-
-  /* ---- 1.30–3.20: clock scene ---- */
-  tl.set("#clock-scene", { autoAlpha: 1 }, 1.3);
-  tl.to("#clock-min",  { rotation: 360, duration: 0.9, ease: "power2.inOut" }, 1.3);
-  tl.to("#clock-hour", { rotation: 420, duration: 0.9, ease: "power2.inOut" }, 1.3);
-  tl.to("#clock-label", { autoAlpha: 1, duration: 0.35, ease: "power2.out" }, 2.0);
-  tl.to("#clock-scene", { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, 2.9);
-  tl.set("#clock-scene", { autoAlpha: 0 }, 3.2);
-
-  /* ---- 3.00–4.20: fatigue + boredom icons ---- */
-  tl.set("#icons-scene", { autoAlpha: 1 }, 3.0);
-  tl.set("#icon-fatigue", { autoAlpha: 1 }, 3.0);
-  tl.fromTo("#fatigue-path",
-    { strokeDashoffset: 1600 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" }, 3.05);
-  tl.set("#icon-boredom", { autoAlpha: 1 }, 3.0);
-  tl.fromTo("#boredom-line",
-    { strokeDashoffset: 800 }, { strokeDashoffset: 0, duration: 0.35, ease: "power2.inOut" }, 3.35);
-  tl.to("#boredom-line",
-    { autoAlpha: 0.35, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, 3.75);
-  tl.to("#icons-scene", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 3.9);
-  tl.set("#icons-scene", { autoAlpha: 0 }, 4.2);
-
-  /* ---- 4.00–6.00: dotted path ---- */
-  tl.set("#path-scene", { autoAlpha: 1 }, 4.0);
-  tl.fromTo("#path-line",
-    { strokeDashoffset: 1400 }, { strokeDashoffset: 0, duration: 1.2, ease: "power1.inOut" }, 4.15);
-  tl.to("#path-arrow", { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, 5.15);
-  tl.to("#path-text", { autoAlpha: 1, y: 0, duration: 0.4, ease: "power2.out" }, 4.5);
-  tl.to("#path-scene", { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, 5.7);
-  tl.set("#path-scene", { autoAlpha: 0 }, 6.0);
-
-  /* ---- 6.00–6.35: tap ripple ---- */
-  tl.set("#tap-ripple", { autoAlpha: 1, scale: 0.2 }, 6.0);
-  tl.to("#tap-ripple",
-    { scale: 1.8, autoAlpha: 0, duration: 0.35, ease: "power2.out" }, 6.0);
-
-  /* ---- 6.50–7.30: flash, cracks, snap to 0 ---- */
-  tl.set("#flash", { autoAlpha: 0 },    6.5);
-  tl.set("#flash", { autoAlpha: 0.85 }, 6.52);
-  tl.set("#flash", { autoAlpha: 0 },    6.58);
-
-  tl.set("#cracks", { autoAlpha: 1 }, 6.5);
-  tl.fromTo("#crack-1", { strokeDashoffset: 300 }, { strokeDashoffset: 0, duration: 0.15, ease: "power2.out" }, 6.5);
-  tl.fromTo("#crack-2", { strokeDashoffset: 300 }, { strokeDashoffset: 0, duration: 0.12, ease: "power2.out" }, 6.55);
-  tl.fromTo("#crack-3", { strokeDashoffset: 200 }, { strokeDashoffset: 0, duration: 0.10, ease: "power2.out" }, 6.60);
-
-  // brief shake on the counter
-  tl.to("#counter-main", { x: "+=6", duration: 0.04, yoyo: true, repeat: 3, ease: "none" }, 6.5);
-  // snap 47 → 0
-  tl.set("#cn-" + (counterValues.length - 1), { autoAlpha: 0 }, 6.62);
-  tl.set("#cn-zero", { autoAlpha: 1 }, 6.62);
-
-  tl.to("#cracks", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 6.85);
-  tl.set("#cracks", { autoAlpha: 0 }, 7.3);
-
-  // counter dies
-  tl.to("#counter-main", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 7.4);
-  tl.set("#counter-main", { autoAlpha: 0 }, 8.0);
-
-  /* ---- 9.00–11.20: stillness ---- */
-  tl.to("#stillness-text", { autoAlpha: 1, y: 0, duration: 1.2, ease: "power2.out" }, 9.0);
-  tl.to("#stillness-text", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 10.7);
-  tl.set("#stillness-text", { autoAlpha: 0 }, 11.2);
-
-  /* ---- 11.20–14.00: weak ---- */
-  tl.to("#weak-text", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 11.2);
-  tl.to("#weak-line", { autoAlpha: 1, scaleX: 1, duration: 0.5, ease: "power2.out" }, 12.2);
-  tl.to("#weak-line", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 13.2);
-  tl.set("#weak-line", { autoAlpha: 0 }, 13.8);
-  tl.to("#weak-text", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 13.6);
-  tl.set("#weak-text", { autoAlpha: 0 }, 14.0);
-
-  /* ---- 14.00–19.00: diagram ---- */
-  tl.set("#diagram", { autoAlpha: 1 }, 14.0);
-  tl.to("#diagram-dot", { autoAlpha: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 14.2);
-  tl.to("#diagram-door", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.4);
-  tl.to("#diagram-caption", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.8);
-
-  // pulse 1 — "one tap away"
-  tl.to("#door-gap", { fill: "#FFB347", opacity: 0.6, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 15.5);
-  tl.to("#diagram-dot", { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, 15.5);
-
-  // pulse 2 — "zero defenses"
-  tl.to("#door-gap", { fill: "#FFB347", opacity: 0.7, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 17.2);
-  tl.to("#diagram-dot", { scale: 1.25, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 17.2);
-
-  tl.to("#diagram", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 18.4);
-  tl.to("#diagram-caption", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 18.4);
-  tl.set("#diagram", { autoAlpha: 0 }, 18.9);
-  tl.set("#diagram-caption", { autoAlpha: 0 }, 18.9);
-
-  /* ---- 19.00–21.00: willpower crossout ---- */
-  tl.to("#willpower-text", { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 19.0);
-  tl.to("#willpower-strike", { scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 19.6);
-  tl.set("#willpower-text", { autoAlpha: 0 }, 21.0);  // hard cut
-
-  /* ---- 21.00–26.00: final ---- */
-  tl.to("#final-line1", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 21.05);
-  tl.to("#final-line2", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 22.3);
-  tl.to("#fade-black", { autoAlpha: 1, duration: 1.0, ease: "power2.in" }, 24.8);
-  tl.set("#fade-black", { autoAlpha: 1 }, 25.8);
-
-  /* ---- pad to full duration, register, park at 0 ---- */
-  tl.to({}, { duration: 26 }, 0);
-  window.__timelines["one-tap"] = tl;
-  tl.seek(0);
+"use strict";
+// Timeline configuration per contract rules
+var tl = gsap.timeline({ paused: true });
+// ---------- Scene 1: Validation (0.0 to 3.36) ----------
+tl.set(["#s1-t1", "#s1-t2", "#s1-t3"], { autoAlpha: 0, y: 15 }, 0);
+tl.to("#s1-t1", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 0.2); // "you're not lazy"
+tl.to("#s1-t2", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 1.5); // "you're not broken"
+tl.to("#s1-t3", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 2.5); // "your brain is doing..."
+// Exit Scene 1
+tl.to("#s1", { autoAlpha: 0, duration: 0.36, ease: "power2.in" }, 3.0);
+tl.set("#s1", { autoAlpha: 0 }, 3.36);
+// ---------- Scene 2: The Drift (3.36 to 10.32) ----------
+tl.set("#s2-t1", { autoAlpha: 0, y: 15 }, 0);
+tl.set("#s2-visual", { autoAlpha: 0 }, 0);
+tl.set("#s2-dot", { x: 0 }, 0);
+tl.to("#s2-visual", { autoAlpha: 1, duration: 1.0, ease: "power2.out" }, 3.36);
+tl.to("#s2-t1", { autoAlpha: 1, y: 0, duration: 1.2, ease: "power2.out" }, 4.0);
+// The dot drifts steadily away from the line
+tl.to("#s2-dot", { x: 250, duration: 6.96, ease: "none" }, 3.36);
+// Exit Scene 2
+tl.to("#s2", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 9.92);
+tl.set("#s2", { autoAlpha: 0 }, 10.32);
+// ---------- Scene 3: The Realization (10.32 to 13.68) ----------
+tl.set(["#s3-t1", "#s3-t2"], { autoAlpha: 0, y: 15 }, 0);
+tl.set("#s3-accent", { color: "#D4D4D4" }, 0);
+tl.to("#s3-t1", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 10.4); // "procrastination isn't..."
+tl.to("#s3-t2", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 11.0); // "it's an emotion management problem"
+// Illuminate the amber accent strictly on "emotion management problem"
+tl.to("#s3-accent", { color: "#FFB347", duration: 0.6, ease: "power1.inOut" }, 11.2);
+// Exit Scene 3
+tl.to("#s3", { autoAlpha: 0, duration: 0.38, ease: "power2.in" }, 13.3);
+tl.set("#s3", { autoAlpha: 0 }, 13.68);
+// ---------- Scene 4: The Distance (13.68 to 17.50) ----------
+tl.set(["#s4-t1", "#s4-t2", "#s4-visual"], { autoAlpha: 0, y: 15 }, 0);
+// Dot resumes drifting from further away
+tl.set("#s4-dot", { x: 250 }, 0);
+tl.to("#s4-visual", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 13.7);
+tl.to("#s4-t1", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 13.8); // "the task isn't hard..."
+tl.to("#s4-t2", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 15.5); // "until you name that feeling..."
+// Dot continues its escape into the dark
+tl.to("#s4-dot", { x: 500, autoAlpha: 0, duration: 3.82, ease: "power1.in" }, 13.68);
+// Final fade to black over the entire root container
+tl.to("#root", { autoAlpha: 0, duration: 1.0, ease: "power2.inOut" }, 16.5);
+// ---------- Finalization ----------
+// Pad to exactly 17.5 seconds
+tl.to({}, { duration: 17.5 }, 0);
+// Register timeline
+window.__timelines = window.__timelines || {};
+window.__timelines["avoidance"] = tl;
+// Park at the start frame
+tl.seek(0);
 })();
 </script>
 </body>
