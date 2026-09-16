@@ -1,201 +1,274 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=1280, height=720" />
-<title>The Avoidance Protocol</title>
-<script src="[https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js](https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js)"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>It's Not Laziness</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
-:root {
---bg: #0A0A0A;
---ink: #D4D4D4;
---accent: #FFB347; /* warm amber */
-}
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-html, body {
-width: 1280px;
-height: 720px;
-overflow: hidden;
-background: var(--bg);
-font-family: system-ui, sans-serif;
-color: var(--ink);
-}
-#root {
-position: relative;
-width: 1280px;
-height: 720px;
-overflow: hidden;
-background: var(--bg);
-}
-/* ---------- Shared Classes ---------- */
-.clip {
-position: absolute;
-inset: 0;
-}
-.scene {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 80px;
-text-align: center;
-}
-/* ---------- Typography ---------- */
-.text-large {
-font-size: 56px;
-font-weight: 300;
-letter-spacing: 0.04em;
-line-height: 1.4;
-margin-bottom: 20px;
-will-change: transform, opacity;
-}
-.text-medium {
-font-size: 42px;
-font-weight: 300;
-letter-spacing: 0.03em;
-line-height: 1.5;
-will-change: transform, opacity;
-}
-.accent {
-color: var(--ink);
-transition: color 0.5s ease;
-}
-/* ---------- Visuals ---------- */
-.visual-container {
-position: relative;
-width: 600px;
-height: 100px;
-margin: 40px auto;
-}
-.fixed-line {
-position: absolute;
-left: 100px;
-top: 10px;
-bottom: 10px;
-width: 2px;
-background: rgba(212, 212, 212, 0.4);
-}
-.drifting-dot {
-position: absolute;
-left: 100px;
-top: 50%;
-transform: translateY(-50%);
-width: 12px;
-height: 12px;
-border-radius: 50%;
-background: var(--ink);
-will-change: transform, opacity;
-}
+  html, body {
+    width: 1280px; height: 720px; margin: 0; overflow: hidden;
+    background: #F7F7F4;
+    color: #111111;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  #root { position: relative; width: 1280px; height: 720px; overflow: hidden; background: #F7F7F4; }
+  .clip { position: absolute; inset: 0; }
+  .scene {
+    display: grid; place-items: center;
+    padding: 90px 110px;
+    box-sizing: border-box;
+  }
+  .headline {
+    font-size: 74px;
+    font-weight: 800;
+    line-height: 1.18;
+    text-align: center;
+    letter-spacing: -0.02em;
+    color: #111111;
+    margin: 0;
+    will-change: transform, opacity;
+  }
+  .headline .row { display: block; }
+
+  .accent-wrap {
+    position: relative;
+    display: inline-block;
+    padding: 4px 16px;
+  }
+  .accent-bg {
+    position: absolute;
+    top: -4px; bottom: -4px; left: -6px; right: -6px;
+    background: #FF6A3D;
+    border-radius: 12px;
+    transform-origin: left center;
+    transform: scaleX(0);
+    z-index: 0;
+    will-change: transform;
+  }
+  .accent-label {
+    position: relative;
+    z-index: 1;
+    color: #111111;
+    font-weight: 800;
+  }
+
+  .s7-line {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 90px 110px;
+    box-sizing: border-box;
+  }
+
+  #motif-line {
+    position: absolute;
+    left: 140px;
+    width: 1000px;
+    bottom: 130px;
+    height: 4px;
+    background: #111111;
+    border-radius: 2px;
+    opacity: 0.9;
+  }
+  #motif-dot {
+    position: absolute;
+    left: 132px;
+    bottom: 124px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #111111;
+    will-change: transform;
+  }
 </style>
 </head>
 <body>
-<!-- HTML structure and styling based on HyperFrames contract -->
-<div
-id="root"
-data-composition-id="avoidance"
-data-start="0"
-data-duration="17.5"
-data-width="1280"
-data-height="720"
->
-<!-- Scene 1: Validation -->
-<section id="s1" class="clip scene" data-start="0" data-duration="3.36" data-track-index="1">
-<div id="s1-t1" class="text-large">You're not lazy.</div>
-<div id="s1-t2" class="text-large">You're not broken.</div>
-<div id="s1-t3" class="text-medium" style="margin-top: 20px;">Your brain is doing exactly what it evolved to do.</div>
-</section>
-<!-- Scene 2: The Drift -->
-<section id="s2" class="clip scene" data-start="3.36" data-duration="6.96" data-track-index="2">
-<div class="visual-container" id="s2-visual">
-<div class="fixed-line"></div>
-<div class="drifting-dot" id="s2-dot"></div>
+
+<div id="root"
+     data-composition-id="main"
+     data-start="0"
+     data-duration="18.2"
+     data-width="1280"
+     data-height="720">
+
+  <!-- persistent motif: fixed line + drifting dot, full duration -->
+  <div id="motif" class="clip" data-start="0" data-duration="18.2" data-track-index="0">
+    <div id="motif-line"></div>
+    <div id="motif-dot"></div>
+  </div>
+
+  <!-- s1 -->
+  <section id="s1" class="clip scene" data-start="0" data-duration="1.4" data-track-index="1">
+    <h1 id="s1-text" class="headline">You're not lazy.</h1>
+  </section>
+
+  <!-- s2 -->
+  <section id="s2" class="clip scene" data-start="1.4" data-duration="1.2" data-track-index="2">
+    <h1 id="s2-text" class="headline">You're not broken.</h1>
+  </section>
+
+  <!-- s3 -->
+  <section id="s3" class="clip scene" data-start="2.6" data-duration="2.8" data-track-index="3">
+    <h1 class="headline">
+      <span id="s3-line1" class="row">Your brain is doing</span>
+      <span id="s3-line2" class="row">exactly what it evolved to do &mdash;</span>
+    </h1>
+  </section>
+
+  <!-- s4 -->
+  <section id="s4" class="clip scene" data-start="5.4" data-duration="2.8" data-track-index="4">
+    <h1 class="headline">
+      <span id="s4-line1" class="row">avoid the thing that</span>
+      <span id="s4-line2" class="row">feels bad right now.</span>
+    </h1>
+  </section>
+
+  <!-- s5 -->
+  <section id="s5" class="clip scene" data-start="8.2" data-duration="2.4" data-track-index="5">
+    <h1 id="s5-text" class="headline">
+      Procrastination isn't<br>a time management problem.
+    </h1>
+  </section>
+
+  <!-- s6 : accent beat -->
+  <section id="s6" class="clip scene" data-start="10.6" data-duration="1.7" data-track-index="6">
+    <h1 id="s6-text" class="headline">
+      It's an
+      <span class="accent-wrap">
+        <span id="s6-accent-bg" class="accent-bg"></span>
+        <span class="accent-label">emotion management problem</span>
+      </span>.
+    </h1>
+  </section>
+
+  <!-- s7 : two sequential lines -->
+  <section id="s7" class="clip" data-start="12.3" data-duration="2.3" data-track-index="7">
+    <div id="s7-line1" class="s7-line">
+      <h1 class="headline">The task isn't hard.</h1>
+    </div>
+    <div id="s7-line2" class="s7-line">
+      <h1 class="headline">The feeling is.</h1>
+    </div>
+  </section>
+
+  <!-- s8 -->
+  <section id="s8" class="clip scene" data-start="14.6" data-duration="1.8" data-track-index="8">
+    <h1 id="s8-text" class="headline">
+      And until you name<br>that feeling,
+    </h1>
+  </section>
+
+  <!-- s9 -->
+  <section id="s9" class="clip scene" data-start="16.4" data-duration="1.8" data-track-index="9">
+    <h1 id="s9-text" class="headline">
+      you'll keep<br>running from it.
+    </h1>
+  </section>
+
+  <!-- audio -->
+  <audio id="voiceover" data-start="0" data-duration="17.458" data-track-index="20" data-volume="1" src="voiceover.wav"></audio>
+
+  <audio id="sfx-cut-1" data-start="1.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-2" data-start="2.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-3" data-start="5.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-4" data-start="8.2" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-5" data-start="10.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-6" data-start="12.3" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-7" data-start="14.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+  <audio id="sfx-cut-8" data-start="16.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
+
+  <audio id="sfx-pop" data-start="10.9" data-duration="0.2" data-track-index="22" data-volume="0.6" src="pop.wav"></audio>
+  <audio id="sfx-hum" data-start="16.4" data-duration="1.8" data-track-index="23" data-volume="0.3" src="hum.wav"></audio>
+
 </div>
-<div id="s2-t1" class="text-medium">Avoid the thing that feels bad right now.</div>
-</section>
-<!-- Scene 3: The Realization -->
-<section id="s3" class="clip scene" data-start="10.32" data-duration="3.36" data-track-index="3">
-<div id="s3-t1" class="text-medium">Procrastination isn't a time management problem.</div>
-<div id="s3-t2" class="text-large" style="margin-top: 30px;">
-It's an <span id="s3-accent" class="accent">emotion management problem.</span>
-</div>
-</section>
-<!-- Scene 4: The Distance -->
-<section id="s4" class="clip scene" data-start="13.68" data-duration="3.82" data-track-index="4">
-<div class="visual-container" id="s4-visual">
-<div class="fixed-line"></div>
-<div class="drifting-dot" id="s4-dot"></div>
-</div>
-<div id="s4-t1" class="text-medium">The task isn't hard, the feeling is.</div>
-<div id="s4-t2" class="text-medium" style="margin-top: 20px;">And until you name that feeling,
-you'll keep running from it.</div>
-</section>
-<!-- Audio Tracks -->
-<!-- Voiceover source and timings -->
-<audio id="voiceover" data-start="0" data-duration="17.5" data-track-index="10" data-volume="1" src="fish-audio-20260915-203403_vtt.wav"></audio>
-<!-- Sound Effects -->
-<audio id="sfx-drone" data-start="0" data-duration="17.5" data-track-index="11" data-volume="0.3" src="sfx-dark-ambient-drone.wav"></audio>
-<audio id="sfx-drift" data-start="3.36" data-duration="7.0" data-track-index="12" data-volume="0.15" src="sfx-low-whoosh-drift.wav"></audio>
-<audio id="sfx-chime" data-start="11.2" data-duration="4.0" data-track-index="13" data-volume="0.5" src="sfx-warm-amber-chime.wav"></audio>
-<audio id="sfx-fade" data-start="16.0" data-duration="2.5" data-track-index="14" data-volume="0.4" src="sfx-deep-bass-drop.wav"></audio>
-</div>
+
 <script>
 (function () {
-"use strict";
-// Timeline configuration per contract rules
-var tl = gsap.timeline({ paused: true });
-// ---------- Scene 1: Validation (0.0 to 3.36) ----------
-tl.set(["#s1-t1", "#s1-t2", "#s1-t3"], { autoAlpha: 0, y: 15 }, 0);
-tl.to("#s1-t1", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 0.2); // "you're not lazy"
-tl.to("#s1-t2", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 1.5); // "you're not broken"
-tl.to("#s1-t3", { autoAlpha: 1, y: 0, duration: 1.0, ease: "power2.out" }, 2.5); // "your brain is doing..."
-// Exit Scene 1
-tl.to("#s1", { autoAlpha: 0, duration: 0.36, ease: "power2.in" }, 3.0);
-tl.set("#s1", { autoAlpha: 0 }, 3.36);
-// ---------- Scene 2: The Drift (3.36 to 10.32) ----------
-tl.set("#s2-t1", { autoAlpha: 0, y: 15 }, 0);
-tl.set("#s2-visual", { autoAlpha: 0 }, 0);
-tl.set("#s2-dot", { x: 0 }, 0);
-tl.to("#s2-visual", { autoAlpha: 1, duration: 1.0, ease: "power2.out" }, 3.36);
-tl.to("#s2-t1", { autoAlpha: 1, y: 0, duration: 1.2, ease: "power2.out" }, 4.0);
-// The dot drifts steadily away from the line
-tl.to("#s2-dot", { x: 250, duration: 6.96, ease: "none" }, 3.36);
-// Exit Scene 2
-tl.to("#s2", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 9.92);
-tl.set("#s2", { autoAlpha: 0 }, 10.32);
-// ---------- Scene 3: The Realization (10.32 to 13.68) ----------
-tl.set(["#s3-t1", "#s3-t2"], { autoAlpha: 0, y: 15 }, 0);
-tl.set("#s3-accent", { color: "#D4D4D4" }, 0);
-tl.to("#s3-t1", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 10.4); // "procrastination isn't..."
-tl.to("#s3-t2", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 11.0); // "it's an emotion management problem"
-// Illuminate the amber accent strictly on "emotion management problem"
-tl.to("#s3-accent", { color: "#FFB347", duration: 0.6, ease: "power1.inOut" }, 11.2);
-// Exit Scene 3
-tl.to("#s3", { autoAlpha: 0, duration: 0.38, ease: "power2.in" }, 13.3);
-tl.set("#s3", { autoAlpha: 0 }, 13.68);
-// ---------- Scene 4: The Distance (13.68 to 17.50) ----------
-tl.set(["#s4-t1", "#s4-t2", "#s4-visual"], { autoAlpha: 0, y: 15 }, 0);
-// Dot resumes drifting from further away
-tl.set("#s4-dot", { x: 250 }, 0);
-tl.to("#s4-visual", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 13.7);
-tl.to("#s4-t1", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 13.8); // "the task isn't hard..."
-tl.to("#s4-t2", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power2.out" }, 15.5); // "until you name that feeling..."
-// Dot continues its escape into the dark
-tl.to("#s4-dot", { x: 500, autoAlpha: 0, duration: 3.82, ease: "power1.in" }, 13.68);
-// Final fade to black over the entire root container
-tl.to("#root", { autoAlpha: 0, duration: 1.0, ease: "power2.inOut" }, 16.5);
-// ---------- Finalization ----------
-// Pad to exactly 17.5 seconds
-tl.to({}, { duration: 17.5 }, 0);
-// Register timeline
-window.__timelines = window.__timelines || {};
-window.__timelines["avoidance"] = tl;
-// Park at the start frame
-tl.seek(0);
+  "use strict";
+
+  var tl = gsap.timeline({ paused: true });
+
+  /* ---------- motif: dot drift, full duration ---------- */
+  tl.set("#motif-dot", { x: 0, y: 0 }, 0);
+  tl.to("#motif-dot", { x: 40, y: -6, duration: 5.4, ease: "sine.inOut" }, 0);
+  tl.to("#motif-dot", { x: 220, y: -40, duration: 2.8, ease: "sine.inOut" }, 5.4);
+  tl.to("#motif-dot", { x: 420, y: -70, duration: 5.8, ease: "sine.inOut" }, 8.2);
+  tl.to("#motif-dot", { x: 520, y: -90, duration: 1.8, ease: "sine.inOut" }, 14.6);
+  tl.to("#motif-dot", { x: 820, y: -160, duration: 1.8, ease: "power2.in" }, 16.4);
+  tl.to("#motif", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 17.7);
+  tl.set("#motif", { autoAlpha: 0 }, 18.2);
+
+  /* ---------- s1 ---------- */
+  tl.set("#s1-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s1-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.05);
+  tl.to("#s1-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 1.15);
+  tl.set("#s1-text", { autoAlpha: 0 }, 1.4);
+
+  /* ---------- s2 ---------- */
+  tl.set("#s2-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s2-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.45);
+  tl.to("#s2-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 2.35);
+  tl.set("#s2-text", { autoAlpha: 0 }, 2.6);
+
+  /* ---------- s3 ---------- */
+  tl.set(["#s3-line1", "#s3-line2"], { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s3-line1", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 2.65);
+  tl.to("#s3-line2", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 3.15);
+  tl.to(["#s3-line1", "#s3-line2"], { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 5.15);
+  tl.set(["#s3-line1", "#s3-line2"], { autoAlpha: 0 }, 5.4);
+
+  /* ---------- s4 ---------- */
+  tl.set(["#s4-line1", "#s4-line2"], { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s4-line1", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.45);
+  tl.to("#s4-line2", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.9);
+  tl.to(["#s4-line1", "#s4-line2"], { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 7.95);
+  tl.set(["#s4-line1", "#s4-line2"], { autoAlpha: 0 }, 8.2);
+
+  /* ---------- s5 ---------- */
+  tl.set("#s5-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s5-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 8.25);
+  tl.to("#s5-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 10.35);
+  tl.set("#s5-text", { autoAlpha: 0 }, 10.6);
+
+  /* ---------- s6 : accent beat ---------- */
+  tl.set("#s6-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.set("#s6-accent-bg", { scaleX: 0 }, 0);
+  tl.to("#s6-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 10.65);
+  tl.to("#s6-accent-bg", { scaleX: 1, duration: 0.35, ease: "power3.out" }, 11.1);
+  tl.to("#s6-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 12.05);
+  tl.set("#s6-text", { autoAlpha: 0 }, 12.3);
+
+  /* ---------- s7 : two sequential lines ---------- */
+  tl.set(["#s7-line1", "#s7-line2"], { autoAlpha: 0 }, 0);
+  tl.to("#s7-line1", { autoAlpha: 1, duration: 0.3, ease: "power3.out" }, 12.35);
+  tl.to("#s7-line1", { autoAlpha: 0, duration: 0.2, ease: "power2.in" }, 13.15);
+  tl.set("#s7-line1", { autoAlpha: 0 }, 13.35);
+  tl.to("#s7-line2", { autoAlpha: 1, duration: 0.3, ease: "power3.out" }, 13.35);
+  tl.to("#s7-line2", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 14.35);
+  tl.set("#s7-line2", { autoAlpha: 0 }, 14.6);
+
+  /* ---------- s8 ---------- */
+  tl.set("#s8-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s8-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 14.65);
+  tl.to("#s8-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 16.15);
+  tl.set("#s8-text", { autoAlpha: 0 }, 16.4);
+
+  /* ---------- s9 : final line ---------- */
+  tl.set("#s9-text", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s9-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 16.45);
+  tl.to("#s9-text", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 17.7);
+  tl.set("#s9-text", { autoAlpha: 0 }, 18.2);
+
+  /* ---------- pad to full duration, register, park ---------- */
+  tl.to({}, { duration: 18.2 }, 0);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+  tl.seek(0);
 })();
 </script>
+
 </body>
 </html>
