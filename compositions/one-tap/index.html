@@ -2,273 +2,364 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1280, height=720">
-<title>It's Not Laziness</title>
+<meta name="viewport" content="width=1920, height=1080">
+<title>Fire Cooked Food — Part 1 of 4 (hook: darkness to first observation)</title>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 <style>
-  html, body {
-    width: 1280px; height: 720px; margin: 0; overflow: hidden;
-    background: #F7F7F4;
-    color: #111111;
-    font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  }
-  #root { position: relative; width: 1280px; height: 720px; overflow: hidden; background: #F7F7F4; }
-  .clip { position: absolute; inset: 0; }
-  .scene {
-    display: grid; place-items: center;
-    padding: 90px 110px;
-    box-sizing: border-box;
-  }
-  .headline {
-    font-size: 74px;
-    font-weight: 800;
-    line-height: 1.18;
-    text-align: center;
-    letter-spacing: -0.02em;
-    color: #111111;
-    margin: 0;
-    will-change: transform, opacity;
-  }
-  .headline .row { display: block; }
+      :root {
+        --bg: #101013;
+        --surface: #1A1A1E;
+        --ink: #EDEAE2;
+        --muted: rgba(237, 234, 226, 0.55);
+        --faint: rgba(237, 234, 226, 0.30);
+        --accent: #FFA53D;
+        --accent-soft: #FFD9A0;
+        --line: rgba(237, 234, 226, 0.12);
+        --sans: "Outfit", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; margin: 0; overflow: hidden;
+        background: var(--bg);
+      }
+      #root {
+        position: relative; width: 1920px; height: 1080px; overflow: hidden;
+        background: var(--bg); font-family: var(--sans); color: var(--ink);
+      }
+      .clip { position: absolute; inset: 0; }
+      #bg-layer { z-index: 1; }
+      #bg-grid {
+        position: absolute; inset: 0;
+        background-image:
+          radial-gradient(rgba(237, 234, 226, 0.04) 1px, transparent 1px),
+          linear-gradient(rgba(237, 234, 226, 0.014) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(237, 234, 226, 0.014) 1px, transparent 1px);
+        background-size: 44px 44px, 176px 176px, 176px 176px;
+      }
+      #hf-vignette {
+        position: absolute; inset: 0; pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 52%, rgba(5, 5, 8, 0.6) 100%);
+      }
+      /* ---- persistent heat-dot motif ---- */
+      #heat-wrap { z-index: 60; pointer-events: none; }
+      #heat-dot {
+        position: absolute; left: 50%; top: 50%;
+        width: 28px; height: 28px; margin: -14px 0 0 -14px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #FFE7C2 0%, var(--accent) 42%, rgba(255, 165, 61, 0) 72%);
+        box-shadow: 0 0 24px 6px rgba(255, 165, 61, 0.5);
+        will-change: transform, opacity;
+      }
+      #heat-core {
+        position: absolute; left: 50%; top: 50%;
+        width: 8px; height: 8px; margin: -4px 0 0 -4px;
+        border-radius: 50%; background: #FFF3E0;
+      }
+      /* ---- type system ---- */
+      .caps {
+        position: absolute; width: 100%; text-align: center;
+        font-family: var(--mono); font-size: 26px; letter-spacing: 0.24em;
+        color: var(--muted); text-transform: uppercase;
+      }
+      .hero { font-weight: 800; letter-spacing: -0.02em; line-height: 0.95; color: var(--ink); }
+      .big { font-weight: 700; letter-spacing: -0.01em; line-height: 1.05; color: var(--ink); }
+      .amber { color: var(--accent); text-shadow: 0 0 60px rgba(255, 165, 61, 0.45); }
+      .aside {
+        position: absolute; width: 100%; text-align: center;
+        font-family: var(--mono); font-size: 22px; letter-spacing: 0.14em;
+        color: var(--faint); text-transform: uppercase;
+      }
+      .abs { position: absolute; }
+      .fw { width: 100%; text-align: center; }
 
-  .accent-wrap {
-    position: relative;
-    display: inline-block;
-    padding: 4px 16px;
-  }
-  .accent-bg {
-    position: absolute;
-    top: -4px; bottom: -4px; left: -6px; right: -6px;
-    background: #FF6A3D;
-    border-radius: 12px;
-    transform-origin: left center;
-    transform: scaleX(0);
-    z-index: 0;
-    will-change: transform;
-  }
-  .accent-label {
-    position: relative;
-    z-index: 1;
-    color: #111111;
-    font-weight: 800;
-  }
-
-  .s7-line {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 90px 110px;
-    box-sizing: border-box;
-  }
-
-  #motif-line {
-    position: absolute;
-    left: 140px;
-    width: 1000px;
-    bottom: 130px;
-    height: 4px;
-    background: #111111;
-    border-radius: 2px;
-    opacity: 0.9;
-  }
-  #motif-dot {
-    position: absolute;
-    left: 132px;
-    bottom: 124px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #111111;
-    will-change: transform;
-  }
+      /* scene 1 */
+      #s1-caps { top: 150px; }
+      #s1-had { top: 430px; font-size: 64px; color: var(--muted); }
+      #s1-fire { top: 500px; font-size: 300px; }
+      .fire-letter { display: inline-block; will-change: transform, opacity; }
+      /* scene 2 */
+      #s2-l1 { top: 330px; font-size: 96px; }
+      #s2-l2 { top: 452px; font-size: 96px; }
+      .obs-dot {
+        position: absolute; border-radius: 50%;
+        background: radial-gradient(circle, var(--accent-soft) 0%, var(--accent) 45%, rgba(255, 165, 61, 0) 75%);
+        will-change: transform, opacity;
+      }
+      #stamp-chip {
+        display: inline-block; padding: 18px 42px;
+        border: 1px solid rgba(255, 165, 61, 0.55); border-radius: 46px;
+        color: var(--accent-soft); background: rgba(26, 26, 30, 0.85);
+      }
+      #s2-stamp { top: 760px; }
+      /* scene 3 */
+      #s3-hero { top: 110px; font-size: 148px; letter-spacing: 0.02em; }
+      #s3-sub1 { top: 292px; }
+      #s3-foodline { top: 352px; }
+      #s3-heat { font-size: 208px; }
+      .food-shape {
+        position: absolute; left: 50%; top: 590px;
+        width: 280px; height: 210px; margin-left: -140px;
+        border: 2px solid var(--ink);
+        border-radius: 46% 54% 58% 42% / 52% 46% 54% 48%;
+        background: transparent; will-change: transform, opacity;
+      }
+      #food-b {
+        border-color: rgba(255, 165, 61, 0.85);
+        border-radius: 62% 38% 44% 56% / 40% 62% 48% 60%;
+        box-shadow: inset 0 0 60px rgba(255, 165, 61, 0.16), 0 0 44px rgba(255, 165, 61, 0.14);
+      }
+      #s3-side { left: 1250px; top: 500px; }
+      #s3-smell { font-size: 50px; }
+      #s3-texture { font-size: 50px; margin-top: 24px; color: var(--muted); }
+      /* scene 4 */
+      #s4-food { width: 190px; height: 150px; margin-left: -95px; top: 430px;
+        border-color: rgba(255, 165, 61, 0.85);
+        border-radius: 62% 38% 44% 56% / 40% 62% 48% 60%;
+        box-shadow: inset 0 0 46px rgba(255, 165, 61, 0.16), 0 0 40px rgba(255, 165, 61, 0.14); }
+      #orbit-ring {
+        position: absolute; left: 50%; top: 505px; width: 400px; height: 400px;
+        margin: -200px 0 0 -200px; border: 1px solid var(--line); border-radius: 50%;
+        will-change: transform, opacity;
+      }
+      #s4-line { top: 856px; font-size: 108px; }
+      #s4-sub { top: 990px; }
+      /* scene 5 */
+      .beat-word { top: 180px; font-size: 168px; }
+      .beat-sub { top: 420px; }
+      #s5-diff-sub { top: 420px; }
 </style>
 </head>
 <body>
+<!-- Part 1 of 4 — global 0.0s–37.17s of the full VO -->
+<div id="root" data-composition-id="fire-cook-p1" data-start="0" data-duration="37.17" data-width="1920" data-height="1080">
 
-<div id="root"
-     data-composition-id="main"
-     data-start="0"
-     data-duration="18.2"
-     data-width="1280"
-     data-height="720">
-
-  <!-- persistent motif: fixed line + drifting dot, full duration -->
-  <div id="motif" class="clip" data-start="0" data-duration="18.2" data-track-index="0">
-    <div id="motif-line"></div>
-    <div id="motif-dot"></div>
+  <div id="bg-layer" class="clip" data-start="0" data-duration="37.17" data-track-index="0">
+    <div id="bg-grid"></div>
+    <div id="hf-vignette"></div>
   </div>
 
-  <!-- s1 -->
-  <section id="s1" class="clip scene" data-start="0" data-duration="1.4" data-track-index="1">
-    <h1 id="s1-text" class="headline">You're not lazy.</h1>
+  <div id="heat-wrap" class="clip" data-start="0" data-duration="37.17" data-track-index="50">
+    <div id="heat-dot"><div id="heat-core"></div></div>
+  </div>
+
+  <!-- S1: darkness -> FIRE hero -->
+  <section id="s1" class="clip" data-start="0" data-duration="3.9" data-track-index="1" style="z-index:10">
+    <div id="s1-caps" class="caps">BEFORE HUMANS HAD KITCHENS</div>
+    <div id="s1-had" class="big fw abs">THEY HAD</div>
+    <div id="s1-fire" class="hero fw abs"><span class="fire-letter">F</span><span class="fire-letter">I</span><span class="fire-letter">R</span><span class="fire-letter">E</span></div>
   </section>
 
-  <!-- s2 -->
-  <section id="s2" class="clip scene" data-start="1.4" data-duration="1.2" data-track-index="2">
-    <h1 id="s2-text" class="headline">You're not broken.</h1>
+  <!-- S2: the question + scattered observations -->
+  <section id="s2" class="clip" data-start="3.9" data-duration="6.7" data-track-index="2" style="z-index:10">
+    <div id="s2-l1" class="big fw abs">HOW DID ANYONE DISCOVER</div>
+    <div id="s2-l2" class="big fw abs">THAT <span class="amber">FIRE</span> COULD COOK FOOD?</div>
+    <div id="obs-field" class="abs" style="inset:0"></div>
+    <div id="s2-stamp" class="caps"><span id="stamp-chip">NOT A SINGLE DISCOVERY</span></div>
   </section>
 
-  <!-- s3 -->
-  <section id="s3" class="clip scene" data-start="2.6" data-duration="2.8" data-track-index="3">
-    <h1 class="headline">
-      <span id="s3-line1" class="row">Your brain is doing</span>
-      <span id="s3-line2" class="row">exactly what it evolved to do &mdash;</span>
-    </h1>
-  </section>
-
-  <!-- s4 -->
-  <section id="s4" class="clip scene" data-start="5.4" data-duration="2.8" data-track-index="4">
-    <h1 class="headline">
-      <span id="s4-line1" class="row">avoid the thing that</span>
-      <span id="s4-line2" class="row">feels bad right now.</span>
-    </h1>
-  </section>
-
-  <!-- s5 -->
-  <section id="s5" class="clip scene" data-start="8.2" data-duration="2.4" data-track-index="5">
-    <h1 id="s5-text" class="headline">
-      Procrastination isn't<br>a time management problem.
-    </h1>
-  </section>
-
-  <!-- s6 : accent beat -->
-  <section id="s6" class="clip scene" data-start="10.6" data-duration="1.7" data-track-index="6">
-    <h1 id="s6-text" class="headline">
-      It's an
-      <span class="accent-wrap">
-        <span id="s6-accent-bg" class="accent-bg"></span>
-        <span class="accent-label">emotion management problem</span>
-      </span>.
-    </h1>
-  </section>
-
-  <!-- s7 : two sequential lines -->
-  <section id="s7" class="clip" data-start="12.3" data-duration="2.3" data-track-index="7">
-    <div id="s7-line1" class="s7-line">
-      <h1 class="headline">The task isn't hard.</h1>
+  <!-- S3: OBSERVATION hero + food transformation -->
+  <section id="s3" class="clip" data-start="11.3" data-duration="12.45" data-track-index="3" style="z-index:10">
+    <div id="s3-hero" class="hero fw abs">OBSERVATION</div>
+    <div id="s3-sub1" class="caps">A LONG PROCESS OF NOTICING</div>
+    <div id="s3-foodline" class="fw abs">
+      <span class="big" style="font-size:92px">FOOD MET </span><span id="s3-heat" class="hero amber">HEAT</span>
     </div>
-    <div id="s7-line2" class="s7-line">
-      <h1 class="headline">The feeling is.</h1>
+    <div id="food-a" class="food-shape"></div>
+    <div id="food-b" class="food-shape"></div>
+    <div id="s3-side" class="abs">
+      <div id="s3-smell" class="big">THE SMELL IS DIFFERENT</div>
+      <div id="s3-texture" class="big">THE TEXTURE HAS CHANGED</div>
     </div>
   </section>
 
-  <!-- s8 -->
-  <section id="s8" class="clip scene" data-start="14.6" data-duration="1.8" data-track-index="8">
-    <h1 id="s8-text" class="headline">
-      And until you name<br>that feeling,
-    </h1>
+  <!-- S4: easier to eat + first orbit -->
+  <section id="s4" class="clip" data-start="24.4" data-duration="5.7" data-track-index="4" style="z-index:10">
+    <div id="s4-food" class="food-shape"></div>
+    <div id="orbit-ring"></div>
+    <div id="s4-line" class="hero fw abs">EASIER TO EAT</div>
+    <div id="s4-sub" class="caps">YOU DON&rsquo;T KNOW WHY &mdash; BUT YOU&rsquo;LL TRY IT AGAIN</div>
   </section>
 
-  <!-- s9 -->
-  <section id="s9" class="clip scene" data-start="16.4" data-duration="1.8" data-track-index="9">
-    <h1 id="s9-text" class="headline">
-      you'll keep<br>running from it.
-    </h1>
+  <!-- S5: three rapid beats -->
+  <section id="s5" class="clip" data-start="31.0" data-duration="6.17" data-track-index="5" style="z-index:10">
+    <div id="w-closer" class="hero fw abs beat-word">CLOSER</div>
+    <div id="w-closer-sub" class="caps beat-sub">MOVE THE FOOD</div>
+    <div id="w-longer" class="hero fw abs beat-word">LONGER</div>
+    <div id="w-longer-sub" class="caps beat-sub">LEAVE IT</div>
+    <div id="w-diff" class="hero fw abs beat-word">DIFFERENT</div>
+    <div id="w-diff-sub" class="caps">TRY A DIFFERENT INGREDIENT</div>
   </section>
 
-  <!-- audio -->
-  <audio id="voiceover" data-start="0" data-duration="17.458" data-track-index="20" data-volume="1" src="voiceover.wav"></audio>
-
-  <audio id="sfx-cut-1" data-start="1.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-2" data-start="2.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-3" data-start="5.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-4" data-start="8.2" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-5" data-start="10.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-6" data-start="12.3" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-7" data-start="14.6" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-  <audio id="sfx-cut-8" data-start="16.4" data-duration="0.15" data-track-index="21" data-volume="0.4" src="whoosh.wav"></audio>
-
-  <audio id="sfx-pop" data-start="10.9" data-duration="0.2" data-track-index="22" data-volume="0.6" src="pop.wav"></audio>
-  <audio id="sfx-hum" data-start="16.4" data-duration="1.8" data-track-index="23" data-volume="0.3" src="hum.wav"></audio>
-
+  <audio data-start="2.3" data-duration="1.4" data-track-index="20" data-volume="0.5" src="./assets/sfx/impact-bass-1.mp3"></audio>
+  <audio data-start="4.2" data-duration="0.8" data-track-index="21" data-volume="0.35" src="./assets/sfx/ping.mp3"></audio>
+  <audio data-start="12.0" data-duration="0.3" data-track-index="22" data-volume="0.3" src="./assets/sfx/click-soft.mp3"></audio>
+  <audio data-start="13.2" data-duration="0.3" data-track-index="23" data-volume="0.3" src="./assets/sfx/click-soft.mp3"></audio>
+  <audio data-start="14.4" data-duration="0.3" data-track-index="24" data-volume="0.3" src="./assets/sfx/click-soft.mp3"></audio>
+  <audio data-start="26.0" data-duration="0.4" data-track-index="25" data-volume="0.4" src="./assets/sfx/pop.mp3"></audio>
+  <audio data-start="31.3" data-duration="0.3" data-track-index="26" data-volume="0.4" src="./assets/sfx/click.mp3"></audio>
+  <audio data-start="33.2" data-duration="0.4" data-track-index="27" data-volume="0.4" src="./assets/sfx/pop.mp3"></audio>
+  <audio data-start="35.2" data-duration="0.3" data-track-index="28" data-volume="0.4" src="./assets/sfx/click.mp3"></audio>
 </div>
 
 <script>
 (function () {
   "use strict";
 
+  /* ---- deterministic DOM build: observation dots ---- */
+  var OBS = [
+    [300, 250, 14], [1420, 300, 11], [520, 810, 12], [1500, 760, 15],
+    [700, 180, 10], [1240, 860, 13], [900, 830, 11], [350, 560, 12]
+  ];
+  var field = document.getElementById("obs-field");
+  for (var i = 0; i < OBS.length; i++) {
+    var d = document.createElement("div");
+    d.className = "obs-dot";
+    d.id = "obs-" + i;
+    var s = OBS[i][2];
+    d.style.width = s + "px"; d.style.height = s + "px";
+    d.style.left = OBS[i][0] + "px"; d.style.top = OBS[i][1] + "px";
+    field.appendChild(d);
+  }
+
   var tl = gsap.timeline({ paused: true });
 
-  /* ---------- motif: dot drift, full duration ---------- */
-  tl.set("#motif-dot", { x: 0, y: 0 }, 0);
-  tl.to("#motif-dot", { x: 40, y: -6, duration: 5.4, ease: "sine.inOut" }, 0);
-  tl.to("#motif-dot", { x: 220, y: -40, duration: 2.8, ease: "sine.inOut" }, 5.4);
-  tl.to("#motif-dot", { x: 420, y: -70, duration: 5.8, ease: "sine.inOut" }, 8.2);
-  tl.to("#motif-dot", { x: 520, y: -90, duration: 1.8, ease: "sine.inOut" }, 14.6);
-  tl.to("#motif-dot", { x: 820, y: -160, duration: 1.8, ease: "power2.in" }, 16.4);
-  tl.to("#motif", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 17.7);
-  tl.set("#motif", { autoAlpha: 0 }, 18.2);
+  /* ---- bg ---- */
+  tl.fromTo("#bg-grid", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4, ease: "power1.out" }, 0);
+  tl.fromTo("#hf-vignette", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.4, ease: "power1.out" }, 0);
 
-  /* ---------- s1 ---------- */
-  tl.set("#s1-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s1-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.05);
-  tl.to("#s1-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 1.15);
-  tl.set("#s1-text", { autoAlpha: 0 }, 1.4);
+  /* ================= S1 (0–3.9) ================= */
+  tl.set("#heat-dot", { autoAlpha: 0, x: 0, y: 60, scale: 1 }, 0);
+  tl.to("#heat-dot", { autoAlpha: 1, duration: 0.5, ease: "power1.out" }, 0.4);
+  tl.to("#heat-dot", { x: 50, y: 10, duration: 0.8, ease: "sine.inOut" }, 0.9);
+  tl.to("#heat-dot", { x: -35, y: 85, duration: 0.9, ease: "sine.inOut" }, 1.7);
+  tl.to("#heat-dot", { x: 15, y: 45, duration: 0.7, ease: "sine.inOut" }, 2.6);
+  tl.to("#heat-dot", { scale: 1.25, duration: 0.35, yoyo: true, repeat: 3, ease: "sine.inOut" }, 0.6);
 
-  /* ---------- s2 ---------- */
-  tl.set("#s2-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s2-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.45);
-  tl.to("#s2-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 2.35);
-  tl.set("#s2-text", { autoAlpha: 0 }, 2.6);
+  tl.set(".fire-letter", { autoAlpha: 0, y: 70 }, 0);
+  tl.to(".fire-letter", { autoAlpha: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power3.out" }, 2.05);
+  tl.set("#s1-had", { autoAlpha: 0, y: 20 }, 0);
+  tl.to("#s1-had", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.4);
+  tl.to(".fire-letter", { color: "#FFA53D", textShadow: "0 0 70px rgba(255,165,61,0.55)", duration: 0.3, ease: "power2.out" }, 2.55);
+  tl.to("#heat-dot", { autoAlpha: 0, scale: 1.6, duration: 0.4, ease: "power2.in" }, 3.45);
+  tl.to(".fire-letter", {
+    x: function (i) { return [-340, 260, 400, -280][i]; },
+    y: function (i) { return [-200, -280, 160, 230][i]; },
+    rotation: function (i) { return [-16, 12, 20, -12][i]; },
+    autoAlpha: 0, duration: 0.45, ease: "power2.in"
+  }, 3.4);
+  tl.to("#s1-had", { autoAlpha: 0, duration: 0.3 }, 3.45);
+  tl.to("#s1-caps", { autoAlpha: 0, duration: 0.3 }, 3.4);
+  tl.set("#s1", { autoAlpha: 0 }, 3.9);
 
-  /* ---------- s3 ---------- */
-  tl.set(["#s3-line1", "#s3-line2"], { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s3-line1", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 2.65);
-  tl.to("#s3-line2", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 3.15);
-  tl.to(["#s3-line1", "#s3-line2"], { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 5.15);
-  tl.set(["#s3-line1", "#s3-line2"], { autoAlpha: 0 }, 5.4);
+  /* ================= S2 (3.9–10.6) ================= */
+  tl.set(["#s2-l1", "#s2-l2"], { autoAlpha: 0, y: 40 }, 0);
+  tl.to("#s2-l1", { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.05);
+  tl.to("#s2-l2", { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 5.15);
+  for (var o = 0; o < OBS.length; o++) {
+    tl.set("#obs-" + o, { autoAlpha: 0 }, 0);
+    tl.to("#obs-" + o, { autoAlpha: 0.85, duration: 0.4, ease: "power1.out" }, 5.6 + o * 0.18);
+    tl.to("#obs-" + o, {
+      x: (o % 2 === 0 ? 22 : -22), y: (o % 3 === 0 ? -18 : 18),
+      duration: 1.1, yoyo: true, repeat: 1, ease: "sine.inOut"
+    }, 5.9 + o * 0.18);
+  }
+  tl.set("#s2-stamp", { autoAlpha: 0, scale: 1.4 }, 0);
+  tl.to("#s2-stamp", { autoAlpha: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)" }, 8.0);
+  tl.to("#s2-l1", { autoAlpha: 0, y: -20, duration: 0.4, ease: "power2.in" }, 10.15);
+  tl.to("#s2-l2", { autoAlpha: 0, y: -20, duration: 0.4, ease: "power2.in" }, 10.2);
+  for (var o2 = 0; o2 < OBS.length; o2++) {
+    tl.to("#obs-" + o2, { autoAlpha: 0, duration: 0.4, ease: "power1.in" }, 10.15);
+  }
+  tl.set("#s2", { autoAlpha: 0 }, 10.6);
 
-  /* ---------- s4 ---------- */
-  tl.set(["#s4-line1", "#s4-line2"], { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s4-line1", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.45);
-  tl.to("#s4-line2", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.9);
-  tl.to(["#s4-line1", "#s4-line2"], { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 7.95);
-  tl.set(["#s4-line1", "#s4-line2"], { autoAlpha: 0 }, 8.2);
+  /* ================= S3 (11.3–23.75) ================= */
+  tl.fromTo("#s3-hero",
+    { clipPath: "inset(0 100% 0 0)", autoAlpha: 1 },
+    { clipPath: "inset(0 0% 0 0)", duration: 0.9, ease: "power2.inOut" }, 11.55);
+  tl.set("#s3-sub1", { autoAlpha: 0, y: 16 }, 0);
+  tl.to("#s3-sub1", { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" }, 12.7);
+  tl.set("#s3-foodline", { autoAlpha: 0, y: 30 }, 0);
+  tl.to("#s3-foodline", { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out" }, 13.6);
+  tl.fromTo("#s3-heat", { scale: 0.5 }, { scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 14.2);
 
-  /* ---------- s5 ---------- */
-  tl.set("#s5-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s5-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 8.25);
-  tl.to("#s5-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 10.35);
-  tl.set("#s5-text", { autoAlpha: 0 }, 10.6);
+  tl.set("#food-a", { autoAlpha: 0, scale: 0.6 }, 0);
+  tl.to("#food-a", { autoAlpha: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 16.6);
+  tl.set("#food-b", { autoAlpha: 0, scale: 0.94 }, 0);
+  tl.set("#heat-dot", { autoAlpha: 1, x: -280, y: 120, scale: 0.8 }, 16.5);
+  tl.to("#heat-dot", { x: -175, y: 15, duration: 1.4, ease: "sine.inOut" }, 17.2);
+  tl.to("#food-a", { autoAlpha: 0.1, scale: 1.05, duration: 0.8, ease: "power2.inOut" }, 19.4);
+  tl.to("#food-b", { autoAlpha: 1, scale: 1, duration: 0.8, ease: "power2.inOut" }, 19.5);
+  tl.to("#heat-dot", { x: 0, y: 35, duration: 0.8, ease: "sine.inOut" }, 19.4);
+  tl.to("#heat-dot", { x: 130, y: -70, duration: 0.8, ease: "sine.inOut" }, 20.2);
+  tl.set(["#s3-smell", "#s3-texture"], { autoAlpha: 0, x: -30 }, 0);
+  tl.to("#s3-smell", { autoAlpha: 1, x: 0, duration: 0.5, ease: "power2.out" }, 20.6);
+  tl.to("#s3-texture", { autoAlpha: 1, x: 0, duration: 0.5, ease: "power2.out" }, 21.6);
+  tl.to("#food-b", { scale: 0.85, autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 23.3);
+  tl.to(["#s3-hero", "#s3-sub1", "#s3-foodline", "#s3-smell", "#s3-texture"], { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 23.35);
+  tl.to("#heat-dot", { autoAlpha: 0, duration: 0.3 }, 23.4);
+  tl.set("#s3", { autoAlpha: 0 }, 23.75);
 
-  /* ---------- s6 : accent beat ---------- */
-  tl.set("#s6-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.set("#s6-accent-bg", { scaleX: 0 }, 0);
-  tl.to("#s6-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 10.65);
-  tl.to("#s6-accent-bg", { scaleX: 1, duration: 0.35, ease: "power3.out" }, 11.1);
-  tl.to("#s6-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 12.05);
-  tl.set("#s6-text", { autoAlpha: 0 }, 12.3);
+  /* ================= S4 (24.4–30.1) ================= */
+  tl.set("#s4-food", { autoAlpha: 0, scale: 0.5 }, 0);
+  tl.to("#s4-food", { autoAlpha: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 24.55);
+  tl.set("#orbit-ring", { autoAlpha: 0, scale: 0.8 }, 0);
+  tl.to("#orbit-ring", { autoAlpha: 0.6, scale: 1, duration: 0.5, ease: "sine.out" }, 24.9);
+  tl.set("#s4-line", { autoAlpha: 0, y: 30 }, 0);
+  tl.to("#s4-line", { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out" }, 24.7);
+  tl.set("#s4-sub", { autoAlpha: 0 }, 0);
+  tl.to("#s4-sub", { autoAlpha: 1, duration: 0.5, ease: "power2.out" }, 27.3);
+  /* heat-dot rides the ring: two orbits around food center (960,505) */
+  tl.set("#heat-dot", { autoAlpha: 1, x: 0, y: -35, scale: 0.9 }, 24.5);
+  tl.to("#heat-dot", { keyframes: [
+    { x: 141, y: -24, duration: 0.3, ease: "sine.inOut" }, { x: 200, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: 141, y: -46, duration: 0.3, ease: "sine.inOut" }, { x: 0, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: -141, y: -24, duration: 0.3, ease: "sine.inOut" }, { x: -200, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: -141, y: -46, duration: 0.3, ease: "sine.inOut" }, { x: 0, y: -35, duration: 0.3, ease: "sine.inOut" }
+  ] }, 24.9);
+  tl.to("#heat-dot", { keyframes: [
+    { x: 141, y: -24, duration: 0.3, ease: "sine.inOut" }, { x: 200, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: 141, y: -46, duration: 0.3, ease: "sine.inOut" }, { x: 0, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: -141, y: -24, duration: 0.3, ease: "sine.inOut" }, { x: -200, y: -35, duration: 0.3, ease: "sine.inOut" },
+    { x: -141, y: -46, duration: 0.3, ease: "sine.inOut" }, { x: 0, y: -35, duration: 0.3, ease: "sine.inOut" }
+  ] }, 27.3);
+  tl.to(["#s4-line", "#s4-sub"], { autoAlpha: 0, duration: 0.35, ease: "power2.in" }, 29.6);
+  tl.to("#orbit-ring", { autoAlpha: 0, duration: 0.35 }, 29.6);
+  tl.to("#heat-dot", { autoAlpha: 0, duration: 0.3 }, 29.7);
+  tl.set("#s4", { autoAlpha: 0 }, 30.1);
 
-  /* ---------- s7 : two sequential lines ---------- */
-  tl.set(["#s7-line1", "#s7-line2"], { autoAlpha: 0 }, 0);
-  tl.to("#s7-line1", { autoAlpha: 1, duration: 0.3, ease: "power3.out" }, 12.35);
-  tl.to("#s7-line1", { autoAlpha: 0, duration: 0.2, ease: "power2.in" }, 13.15);
-  tl.set("#s7-line1", { autoAlpha: 0 }, 13.35);
-  tl.to("#s7-line2", { autoAlpha: 1, duration: 0.3, ease: "power3.out" }, 13.35);
-  tl.to("#s7-line2", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 14.35);
-  tl.set("#s7-line2", { autoAlpha: 0 }, 14.6);
+  /* ================= S5 (31.0–37.17) ================= */
+  tl.set(["#w-closer", "#w-longer", "#w-diff"], { autoAlpha: 0 }, 0);
+  tl.set(["#w-closer-sub", "#w-longer-sub", "#w-diff-sub"], { autoAlpha: 0 }, 0);
+  /* CLOSER — slides in from the left */
+  tl.fromTo("#w-closer", { x: -700 }, { x: 0, autoAlpha: 1, duration: 0.55, ease: "power3.out" }, 31.2);
+  tl.to("#w-closer-sub", { autoAlpha: 1, duration: 0.4 }, 31.4);
+  tl.to("#w-closer", { autoAlpha: 0, scale: 0.92, filter: "blur(6px)", duration: 0.4, ease: "power2.in" }, 32.55);
+  tl.to("#w-closer-sub", { autoAlpha: 0, duration: 0.3 }, 32.55);
+  /* LONGER — stretches into place */
+  tl.fromTo("#w-longer", { scaleX: 0.2, scaleY: 1.7 }, { scaleX: 1, scaleY: 1, autoAlpha: 1, duration: 0.5, ease: "back.out(1.8)" }, 33.0);
+  tl.to("#w-longer-sub", { autoAlpha: 1, duration: 0.4 }, 33.2);
+  tl.to("#w-longer", { autoAlpha: 0, scale: 0.92, filter: "blur(6px)", duration: 0.4, ease: "power2.in" }, 34.35);
+  tl.to("#w-longer-sub", { autoAlpha: 0, duration: 0.3 }, 34.35);
+  /* DIFFERENT — corner-to-corner flight */
+  tl.fromTo("#w-diff", { x: 750, y: -280, rotation: 10 },
+    { x: 0, y: 0, rotation: 0, autoAlpha: 1, duration: 0.6, ease: "power3.out" }, 34.8);
+  tl.to("#w-diff-sub", { autoAlpha: 1, duration: 0.4 }, 35.0);
+  tl.set("#heat-dot", { autoAlpha: 1, x: -420, y: 100, scale: 0.9 }, 31.05);
+  tl.to("#heat-dot", { x: -300, y: 60, duration: 0.9, ease: "sine.inOut" }, 32.0);
+  tl.to("#heat-dot", { x: 60, y: -40, duration: 1.4, ease: "sine.inOut" }, 33.2);
+  tl.to("#heat-dot", { x: -60, y: 90, duration: 1.2, ease: "sine.inOut" }, 35.0);
+  tl.to("#heat-dot", { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, 35.7);
+  tl.to(["#w-diff", "#w-diff-sub"], { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 36.7);
+  tl.to("#heat-dot", { autoAlpha: 0, duration: 0.4 }, 36.7);
+  tl.set("#s5", { autoAlpha: 0 }, 37.17);
 
-  /* ---------- s8 ---------- */
-  tl.set("#s8-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s8-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 14.65);
-  tl.to("#s8-text", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, 16.15);
-  tl.set("#s8-text", { autoAlpha: 0 }, 16.4);
-
-  /* ---------- s9 : final line ---------- */
-  tl.set("#s9-text", { autoAlpha: 0, y: 20 }, 0);
-  tl.to("#s9-text", { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 16.45);
-  tl.to("#s9-text", { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 17.7);
-  tl.set("#s9-text", { autoAlpha: 0 }, 18.2);
-
-  /* ---------- pad to full duration, register, park ---------- */
-  tl.to({}, { duration: 18.2 }, 0);
-
+  /* ---- pad, register, park ---- */
+  tl.to({}, { duration: 37.17 }, 0);
   window.__timelines = window.__timelines || {};
-  window.__timelines["main"] = tl;
+  window.__timelines["fire-cook-p1"] = tl;
   tl.seek(0);
 })();
 </script>
-
 </body>
 </html>
